@@ -54,3 +54,52 @@ CREATE TABLE verkauf.bestellungen(
 
 -- Gesamten Inhalt der Tabelle bestellungen löschen
 TRUNCATE TABLE verkauf.bestellungen;
+
+-- Primärschlüssel beim Erstellen der neuen Tabelle produkte definieren
+CREATE TABLE verkauf.produkte (
+    produktid INT IDENTITY(1,1) PRIMARY KEY,
+    produktname VARCHAR(100),
+    preis MONEY,
+    energielabel CHAR(1)
+);
+
+-- Primärschlüssel auf der Tabelle kunden nachträglich definieren
+ALTER TABLE verkauf.kunden ADD PRIMARY KEY (kundenid);
+
+-- Primärschlüssel auf der Tabelle bestellungen nachträglich definieren
+ALTER TABLE verkauf.bestellungen ADD PRIMARY KEY (bestellid);
+
+/*
+Fremdschlüssel auf der Tabelle bestellungen definieren, welcher auf die Primär-
+schlüsselspalte der Tabelle kunden verweist
+*/
+ALTER TABLE verkauf.bestellungen  
+ADD CONSTRAINT fk_bestellungen_kunden FOREIGN KEY (kundenid) 
+REFERENCES verkauf.kunden(kundenid);
+
+/* 
+Identisches Beispiel mit dem Unterschied, dass der Constraint nicht explizit 
+benannt wird
+*/
+ALTER TABLE verkauf.bestellungen  
+ADD FOREIGN KEY (kundenid) REFERENCES verkauf.kunden(kundenid);
+
+/* Der Fremdschlüssel wird wieder gelöscht oder ersetzt: */
+ALTER TABLE verkauf.bestellungen  
+DROP CONSTRAINT fk_bestellungen_kunden;
+
+-- keine leeren Werte in der Spalte nachname zulassen
+ALTER TABLE verkauf.kunden ALTER COLUMN nachname VARCHAR(30) NOT NULL;
+
+
+-- Standartwert in der Spalte vorname setzen
+ALTER TABLE verkauf.kunden ADD DEFAULT 'unbekannt' FOR vorname;
+
+/* 
+Regel hinzufügen, dass in der Spalte bestelldatum nur Datumswerte eingefügt werden
+dürfen, welche nicht älter als 01.01.2020 sind
+*/
+ALTER TABLE verkauf.bestellungen ADD CHECK (bestelldatum > '2019-12-31');
+
+-- Regel definieren, dass in der Spalte energielabel nur bestimmte Werte erlaubt sind
+ALTER TABLE verkauf.produkte ADD CHECK (energielabel IN ('A','B','C','D','E'));
